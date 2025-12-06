@@ -1,0 +1,114 @@
+# GDELT Conflict Prediction Configuration
+
+# Countries/Regions to analyze
+regions:
+  israel_palestine:
+    name: "Israel-Palestine"
+    countries: ["ISR", "PSE"]
+    actor_keywords: ["ISRAEL", "PALESTINE", "GAZA", "HAMAS", "IDF"]
+    date_range:
+      start: "2023-01-01"
+      end: "2023-12-31"
+
+  russia_ukraine:
+    name: "Russia-Ukraine"
+    countries: ["RUS", "UKR"]
+    actor_keywords: ["RUSSIA", "UKRAINE", "CRIMEA", "DONBASS"]
+    date_range:
+      start: "2022-01-01"
+      end: "2023-12-31"
+
+  india_pakistan:
+    name: "India-Pakistan"
+    countries: ["IND", "PAK"]
+    actor_keywords: ["INDIA", "PAKISTAN", "KASHMIR", "LOC"]
+    date_range:
+      start: "2023-01-01"
+      end: "2023-12-31"
+
+# GDELT Features to use
+features:
+  event_codes: true
+  goldstein_scale: true
+  num_mentions: true
+  num_sources: true
+  num_articles: true
+  avg_tone: true
+  actor1: true
+  actor2: true
+  event_geo: true
+  quad_class: true
+
+# Time series configuration
+time_series:
+  aggregation: "daily"  # daily, weekly, monthly
+  window_size: 30  # days for sliding window
+  step_size: 1  # days
+
+# LSTM Autoencoder configuration
+model:
+  type: transformer_forecaster
+  target_col: target_fatalities
+  forecast_horizon: 1
+  
+  # Device configuration
+  device: "auto"  # "auto" (use GPU if available), "cuda", "cpu", or specific GPU like "cuda:0"
+  use_gpu: true  # Enable GPU usage if available
+  gpu_id: 0  # GPU device ID (for multi-GPU systems)
+
+  lstm:
+    hidden_dim: 64
+    num_layers: 2
+    dropout: 0.2
+    bidirectional: true
+    sequence_length: 30
+
+  transformer:
+    d_model: 128
+    nhead: 4
+    num_layers: 2
+    dim_feedforward: 512
+    dropout: 0.1
+
+  training:
+    batch_size: 32
+    epochs: 100
+    learning_rate: 0.001
+    early_stopping_patience: 10
+    validation_split: 0.2
+
+  anomaly_detection:
+    threshold_method: "percentile"  # percentile, std, adaptive
+    threshold_percentile: 95
+    threshold_std_multiplier: 3.0
+
+# Normal state definition
+normal_state:
+  # Periods to use as "normal" (non-conflict) for training
+  # Will be defined per region based on ground truth
+  use_auto_detection: true
+  min_normal_period_days: 90
+
+# Paths
+paths:
+  data_raw: "data/raw"
+  data_processed: "data/processed"
+  ground_truth: "data/ground_truth"
+  models: "models"
+  results: "results"
+  logs: "logs"
+
+# Data collection
+data_collection:
+  method: "bigquery"  # "bigquery" (fast, requires GCP) or "download" (slow, direct download)
+  bigquery:
+    credentials_path: "c:/Users/dygks/Documents/Dev/team_project/golden-passkey-472209-c3-86b37e84a847.json"
+    project_id: "golden-passkey-472209-c3"
+    batch_months: 3  # Fetch data in batches of N months
+  download:
+    rate_limit_delay: 0.1  # Seconds between requests
+
+# Logging
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
