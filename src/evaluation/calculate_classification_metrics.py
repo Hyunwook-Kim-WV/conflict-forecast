@@ -120,6 +120,8 @@ def calculate_metrics(region_name: str):
     print(f"Recall:    {metrics['recall']:.4f}")
     print(f"F1 Score:  {metrics['f1']:.4f}")
     print(f"Accuracy:  {metrics['accuracy']:.4f}")
+    if 'roc_auc' in metrics:
+        print(f"ROC AUC:   {metrics['roc_auc']:.4f}")
     print("="*50 + "\n")
 
 if __name__ == "__main__":
