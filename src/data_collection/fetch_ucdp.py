@@ -23,11 +23,18 @@ class UCDPFetcher:
     # Mapping from our region names to UCDP Country IDs
     # IDs can be found at: https://ucdp.uu.se/downloads/
     REGION_MAPPING = {
-        'israel_palestine': [666, 667],  # Israel, Palestine (if separate) - checking UCDP codes
+        'israel_palestine': [666, 667],  # Israel, Palestine
         'russia_ukraine': [365, 369],    # Russia, Ukraine
         'india_pakistan': [750, 770],    # India, Pakistan
         'china_taiwan': [710, 713],      # China, Taiwan
         'koreas': [731, 732],            # North Korea, South Korea
+        'ethiopia': [530],               # Ethiopia
+        'sudan': [625],                  # Sudan (North)
+        'armenia_azerbaijan': [371, 373], # Armenia, Azerbaijan
+        'myanmar': [775],                # Myanmar (Burma)
+        'afghanistan': [700],            # Afghanistan
+        'kyrgyzstan_tajikistan': [703, 702], # Kyrgyzstan, Tajikistan
+        'niger': [436],                  # Niger
     }
 
     def __init__(self, output_dir: str = "data/ground_truth"):
@@ -133,19 +140,20 @@ if __name__ == "__main__":
     import argparse
     
     parser = argparse.ArgumentParser(description="Fetch UCDP conflict data")
-    parser.add_argument('--regions', nargs='+', help='Specific regions to fetch')
+    parser.add_argument('--regions', nargs='+', help='Specific regions to fetch (space separated)')
     args = parser.parse_args()
     
     config = load_config()
     fetcher = UCDPFetcher()
     
-    # UCDP ID Mapping (Still needed as it's not in config yet, or we should move it to config)
-    # For now, we keep the mapping here but use config for dates and iteration
-    # Ideally, we should add ucdp_ids to config.yaml, but let's stick to the mapping for now
-    # and just use the keys from config.
-    
-    regions_to_process = args.regions if args.regions else config['regions'].keys()
-    
+    # Determine regions to process: either arguments or all in config
+    if args.regions:
+        regions_to_process = args.regions
+    else:
+        regions_to_process = list(config['regions'].keys())
+
+    logger.info(f"Regions to process: {regions_to_process}")
+
     for region_name in regions_to_process:
         if region_name not in config['regions']:
             logger.warning(f"Region {region_name} not found in config, skipping")
@@ -159,7 +167,10 @@ if __name__ == "__main__":
             continue
             
         ucdp_ids = fetcher.REGION_MAPPING[region_name]
-        start_date = region_config['date_range']['start']
-        end_date = region_config['date_range']['end']
+        start_date = region_config['start_date']
+        end_date = region_config['end_date']
         
-        fetcher.run_for_region(region_name, start_date, end_date, ucdp_ids)
+        try:
+            fetcher.run_for_region(region_name, start_date, end_date, ucdp_ids)
+        except Exception as e:
+            logger.error(f"Failed to fetch for {region_name}: {e}")

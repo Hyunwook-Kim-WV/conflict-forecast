@@ -57,6 +57,57 @@ class FeatureEngineer:
 
         return features
 
+    def prepare_monthly_classification_data(
+        self,
+        df: pd.DataFrame,
+        target_col: str,
+        sequence_length: int,
+        threshold: float,
+        window_size: int = 30,
+        scaler_name: str = 'train',
+        fit_scaler: bool = True
+    ) -> Tuple[np.ndarray, np.ndarray, pd.DataFrame]:
+        """
+        Prepare data for Monthly Classification (Window Sum > Threshold)
+        """
+        logger.info(f"Preparing monthly classification data (Threshold: {threshold})")
+        
+        # Calculate Rolling Sum Target
+        # shift(-window_size) is not quite right if we want to predict NEXT 30 days from T.
+        # Logic: Input X is [T-seq...T], Target y is 1 if sum(T+1...T+30) > Threshold
+        
+        target_series = df[target_col].rolling(window=window_size).sum().shift(-window_size)
+        binary_target = (target_series > threshold).astype(int)
+        
+        # Select features
+        features = self.select_features(df, exclude_cols=['date', 'is_conflict', 'conflict_name', target_col])
+        features = self.make_stationary(features)
+        
+        normalized = self.normalize_features(features, fit=fit_scaler, scaler_name=scaler_name)
+        
+        X_arr = normalized.values
+        y_arr = binary_target.values
+        date_arr = df['date'].values
+        
+        X, y, dates = [], [], []
+        
+        # We need to stop earlier because of the forward looking window
+        valid_end = len(X_arr) - window_size 
+        
+        for i in range(sequence_length, valid_end):
+            # Input sequence: [i-seq : i]
+            seq_x = X_arr[i-sequence_length : i]
+            # Target: at time i (representing sum of i...i+30)
+            target = y_arr[i]
+            
+            if np.isnan(target): continue # Should be handled by loop range, but safety check
+            
+            X.append(seq_x)
+            y.append(target)
+            dates.append(date_arr[i])
+            
+        return np.array(X), np.array(y), pd.DataFrame({'date': dates, 'label': y})
+
     def make_stationary(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Make features stationary using differencing

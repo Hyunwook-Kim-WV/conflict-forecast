@@ -3,28 +3,54 @@
 # Countries/Regions to analyze
 regions:
   israel_palestine:
-    name: "Israel-Palestine"
     countries: ["ISR", "PSE"]
-    actor_keywords: ["ISRAEL", "PALESTINE", "GAZA", "HAMAS", "IDF"]
-    date_range:
-      start: "2023-01-01"
-      end: "2023-12-31"
+    start_date: "2023-01-01"
+    end_date: "2023-12-31"
 
   russia_ukraine:
-    name: "Russia-Ukraine"
     countries: ["RUS", "UKR"]
-    actor_keywords: ["RUSSIA", "UKRAINE", "CRIMEA", "DONBASS"]
-    date_range:
-      start: "2022-01-01"
-      end: "2023-12-31"
+    start_date: "2022-01-01"
+    end_date: "2023-12-31"
 
   india_pakistan:
-    name: "India-Pakistan"
     countries: ["IND", "PAK"]
-    actor_keywords: ["INDIA", "PAKISTAN", "KASHMIR", "LOC"]
-    date_range:
-      start: "2023-01-01"
-      end: "2023-12-31"
+    start_date: "2023-01-01"
+    end_date: "2023-12-31"
+
+  ethiopia:
+    countries: ["ETH"]
+    start_date: "2020-01-01"
+    end_date: "2022-12-31"
+
+  sudan:
+    countries: ["SDN"]
+    start_date: "2023-01-01"
+    end_date: "2024-12-31"
+
+  armenia_azerbaijan:
+    countries: ["ARM", "AZE"]
+    start_date: "2020-01-01"
+    end_date: "2021-12-31"
+
+  myanmar:
+    countries: ["MMR"]
+    start_date: "2021-01-01"
+    end_date: "2022-12-31"
+
+  afghanistan:
+    countries: ["AFG"]
+    start_date: "2021-01-01"
+    end_date: "2022-12-31"
+
+  kyrgyzstan_tajikistan:
+    countries: ["KGZ", "TJK"]
+    start_date: "2022-01-01"
+    end_date: "2023-12-31"
+
+  niger:
+    countries: ["NER"]
+    start_date: "2023-01-01"
+    end_date: "2024-12-31"
 
 # GDELT Features to use
 features:
